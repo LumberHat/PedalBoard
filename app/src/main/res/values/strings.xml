@@ -10,4 +10,16 @@
     <string name="player_fragment_label">Player Fragment</string>
     <string name="action_recorder">Recorder</string>
     <string name="action_player">Player</string>
+
+    <string name="action_samples">Samples</string>
+
+    <string name="title">Title</string>
+    <string name="sample_title">Sample Title</string>
+
+    <string name="description">Description</string>
+
+    <string name="sample_title_hint">Enter a title for the sample</string>
+    <string name="sample_description_hint">Enter a description of the sample</string>
+    <string name="save">Save</string>
+    <string name="new_sample">New Sample</string>
 </resources>

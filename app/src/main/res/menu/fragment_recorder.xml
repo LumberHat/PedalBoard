@@ -3,6 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_samples"
+        android:title="@string/action_samples"
+        android:icon="@drawable/ic_settings_black"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_player"
         android:title="@string/action_player"
         android:icon="@drawable/ic_play_black"
@@ -13,5 +19,6 @@
         android:title="@string/action_settings"
         android:icon="@drawable/ic_settings_black"
         app:showAsAction="ifRoom|withText" />
+
 
 </menu>

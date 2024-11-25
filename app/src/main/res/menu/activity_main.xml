@@ -13,5 +13,4 @@
         android:title="@string/action_settings"
         android:icon="@drawable/ic_settings_black"
         app:showAsAction="ifRoom|withText" />
-
 </menu>

@@ -30,9 +30,7 @@
             android:gravity="center"
             android:text="@string/toggle_recording" />
 
+
     </LinearLayout>
-
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

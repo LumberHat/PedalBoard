@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -58,6 +59,12 @@ class RecorderFragment : Fragment() {
             R.id.action_player -> {
                 findNavController().navigate(
                     R.id.show_player
+                )
+                true
+            }
+            R.id.action_samples -> {
+                findNavController().navigate(
+                    R.id.show_sample_list
                 )
                 true
             }
