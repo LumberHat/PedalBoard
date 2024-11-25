@@ -3,26 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/recorderFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
+        android:id="@+id/recorderFragment"
         android:name="com.example.pedalboard.RecorderFragment"
-        android:label="@string/first_fragment_label"
+        android:label="RecorderFragment"
         tools:layout="@layout/fragment_recorder">
-
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/show_player"
+            app:destination="@id/playerFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/SecondFragment"
+        android:id="@+id/playerFragment"
         android:name="com.example.pedalboard.PlayerFragment"
-        android:label="@string/second_fragment_label"
+        android:label="PlayerFragment"
         tools:layout="@layout/fragment_player">
-
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/show_recorder"
+            app:destination="@id/recorderFragment" />
     </fragment>
+
 </navigation>

@@ -7,14 +7,16 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import com.example.pedalboard.databinding.FragmentRecorderBinding
-import com.google.android.material.snackbar.Snackbar
-
+import java.io.IOException
 
 
 private const val TAG = "RecorderFragment"
@@ -31,7 +33,9 @@ class RecorderFragment : Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private var mediaRecorder: MediaRecorder? = null
+
+    private var audioRecorder: MediaRecorder? = null
+    private var recording: Boolean = false
     private var fileName: String = ""
 
     private val requestPermission = registerForActivityResult(
@@ -42,11 +46,34 @@ class RecorderFragment : Fragment() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        Log.d(TAG, "Is it running?")
+
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_recorder, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_player -> {
+                findNavController().navigate(
+                    R.id.show_player
+                )
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        setHasOptionsMenu(true)
         requestPermissions()
+
+        fileName = "${context?.getFilesDir()}/recording.3gp"
+        Log.d(TAG, "Set path to: ${fileName}")
+
+
 
     }
 
@@ -69,11 +96,42 @@ class RecorderFragment : Fragment() {
     }
 
     private fun toggleRecording() {
+        if (recording) {
+            audioRecorder?.apply {
+                stop()
+                release()
+            }
+            audioRecorder = null;
+            Log.d(TAG, "Stopping Recording")
+        } else {
+            audioRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setOutputFile(fileName)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+
+                try {
+                    prepare()
+                } catch (e: IOException) {
+                    Log.e(TAG, "prepare() failed")
+                }
+
+                start()
+            }
+            Log.d(TAG, "Starting Recording")
+        }
+        recording = !recording
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onStop() {
+        super.onStop()
+        audioRecorder?.release()
+        audioRecorder = null
     }
 
     fun requestPermissions() {
