@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/save_sample"
+        android:title="@string/save_sample"
+        android:icon="@drawable/ic_save_black"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/duplicate_sample"
+        android:title="@string/duplicate_sampler"
+        android:icon="@drawable/ic_copy_black"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/delete_sample"
+        android:title="@string/delete_sample"
+        android:icon="@drawable/ic_delete_black"
+        app:showAsAction="ifRoom|withText" />
+</menu>

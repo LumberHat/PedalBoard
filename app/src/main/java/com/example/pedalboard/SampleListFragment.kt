@@ -1,7 +1,6 @@
 package com.example.pedalboard
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,8 +10,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -20,10 +17,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pedalboard.databinding.FragmentSampleListBinding
+import com.example.pedalboard.sampling.Sample
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import java.io.IOException
-import java.util.Date
 import java.util.UUID
 
 
@@ -66,7 +62,12 @@ class SampleListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sampleListViewModel.samples.collect {samples ->
-                    binding.sampleRecyclerView.adapter = SampleListAdapter(samples, onSampleClicked())
+                    binding.sampleRecyclerView.adapter = SampleListAdapter(samples) { sampleId ->
+                        Log.d(TAG, "Opening Sample with ID: ${sampleId}")
+                        findNavController().navigate(
+                            SampleListFragmentDirections.showSampleCreator(sampleId)
+                        )
+                    }
                 }
             }
         }
@@ -89,9 +90,6 @@ class SampleListFragment : Fragment() {
         }
     }
 
-    private fun onSampleClicked() : (sampleId: UUID) -> Unit {
-        return {Snackbar.make(binding.root, "Sample Clicked", Snackbar.LENGTH_LONG).show()}
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -102,11 +100,14 @@ class SampleListFragment : Fragment() {
             val newSample = Sample(
                 id = UUID.randomUUID(),
                 title = "",
-                filePath = ""
+                description = "",
+                filePath = "${context?.getDir("samples", 0)?.absolutePath}/${id}.3gp"
             )
+            Log.d(TAG, "Created with path: ${newSample.filePath}")
+
             sampleListViewModel.addSample(newSample)
             findNavController().navigate(
-                    R.id.show_sample_creator
+                    SampleListFragmentDirections.showSampleCreator(newSample.id)
             )
         }
     }

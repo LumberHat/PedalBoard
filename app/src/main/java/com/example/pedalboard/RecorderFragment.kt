@@ -79,9 +79,6 @@ class RecorderFragment : Fragment() {
 
         fileName = "${context?.getFilesDir()}/recording.3gp"
         Log.d(TAG, "Set path to: ${fileName}")
-
-
-
     }
 
     override fun onCreateView(
@@ -91,7 +88,6 @@ class RecorderFragment : Fragment() {
 
         _binding = FragmentRecorderBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -39,9 +39,9 @@
         android:id="@+id/sampleCreatorFragment"
         android:name="com.example.pedalboard.sampling.SampleCreatorFragment"
         android:label="SampleCreatorFragment"
-        tools:layout="@layout/fragment_sample_creator"/>
+        tools:layout="@layout/fragment_sample_creator">
         <argument
             android:name="sampleId"
             app:argType="java.util.UUID" />
-
+    </fragment>
 </navigation>

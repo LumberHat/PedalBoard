@@ -22,4 +22,9 @@
     <string name="sample_description_hint">Enter a description of the sample</string>
     <string name="save">Save</string>
     <string name="new_sample">New Sample</string>
+    <string name="delete_sample">Delete Sample</string>
+    <string name="duplicate_sampler">Duplicate Sampler</string>
+    <string name="save_sample">Save Sample</string>
+    <string name="test">Test</string>
+    <string name="init">Init</string>
 </resources>
