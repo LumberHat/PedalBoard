@@ -1,4 +1,4 @@
-package com.example.pedalboard.database
+package com.example.pedalboard.sampling.database
 
 import androidx.room.AutoMigration
 import androidx.room.Database

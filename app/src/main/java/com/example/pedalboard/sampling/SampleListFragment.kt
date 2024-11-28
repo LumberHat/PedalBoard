@@ -1,6 +1,5 @@
-package com.example.pedalboard
+package com.example.pedalboard.sampling
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -16,9 +15,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentSampleListBinding
-import com.example.pedalboard.sampling.Sample
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -101,9 +99,8 @@ class SampleListFragment : Fragment() {
                 id = UUID.randomUUID(),
                 title = "",
                 description = "",
-                filePath = "${context?.getDir("samples", 0)?.absolutePath}/${id}.3gp"
+                filePath = ""
             )
-            Log.d(TAG, "Created with path: ${newSample.filePath}")
 
             sampleListViewModel.addSample(newSample)
             findNavController().navigate(

@@ -3,19 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/save_sample"
+        android:id="@+id/save_filter"
         android:title="@string/save"
         android:icon="@drawable/ic_save_black"
         app:showAsAction="ifRoom|withText" />
 
     <item
-        android:id="@+id/duplicate_sample"
+        android:id="@+id/duplicate_filter"
         android:title="@string/duplicate"
         android:icon="@drawable/ic_copy_black"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/delete_sample"
+        android:id="@+id/delete_filter"
         android:title="@string/delete"
         android:icon="@drawable/ic_delete_black"
         app:showAsAction="ifRoom|withText" />

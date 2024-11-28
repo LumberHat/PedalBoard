@@ -3,7 +3,6 @@ package com.example.pedalboard.sampling
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import edu.appstate.cs.sample.SampleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +32,10 @@ class SampleCreatorViewModel(sampleId: UUID) : ViewModel() {
 
     suspend fun addSample(sample: Sample) {
         sampleRepository.addSample(sample)
+    }
+
+    suspend fun duplicateSample(sample: Sample) {
+        sampleRepository.duplicateSample(sample)
     }
 
     fun updateSample(onUpdate: (Sample) -> Sample) {

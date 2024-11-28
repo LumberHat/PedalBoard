@@ -18,17 +18,16 @@
 
     <string name="description">Description</string>
 
-    <string name="sample_title_hint">Enter a title for the sample</string>
-    <string name="sample_description_hint">Enter a description of the sample</string>
+    <string name="title_hint">Enter a title here</string>
+    <string name="description_hint">Enter a description here</string>
     <string name="save">Save</string>
     <string name="new_sample">New Sample</string>
-    <string name="delete_sample">Delete Sample</string>
-    <string name="duplicate_sampler">Duplicate Sampler</string>
-    <string name="save_sample">Save Sample</string>
-    <string name="test">Test</string>
-    <string name="init">Init</string>
     <string name="stop">Stop</string>
-    <string name="playback_error">Error occured with playback</string>
-    <string name="recording_error">Recording Error Occured</string>
-    <string name="sample_description">Description</string>
+    <string name="playback_error">Error occurred with playback</string>
+    <string name="recording_error">Recording error occurred</string>
+    <string name="samples">Samples</string>
+    <string name="filters">Filters</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="delete">Delete</string>
+    <string name="new_filter">New Filter</string>
 </resources>

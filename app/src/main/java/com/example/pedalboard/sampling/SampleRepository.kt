@@ -1,14 +1,16 @@
-package edu.appstate.cs.sample
+package com.example.pedalboard.sampling
 
 import android.content.Context
 import android.util.Log
 import androidx.room.Room
-import com.example.pedalboard.database.SamplesDatabase
-import com.example.pedalboard.sampling.Sample
+import com.example.pedalboard.FilesInator
+import com.example.pedalboard.sampling.database.SamplesDatabase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
@@ -19,6 +21,9 @@ class SampleRepository private constructor(
     context: Context,
     private val coroutineScope: CoroutineScope = GlobalScope
 ) {
+    //no clue why I can't just reference context directly from the constructor
+    //It causes issues in addSample
+    private val context = context
     private val database: SamplesDatabase = Room
         .databaseBuilder(
             context.applicationContext,
@@ -39,8 +44,29 @@ class SampleRepository private constructor(
     }
 
     suspend fun addSample(sample: Sample) {
-        Log.d(TAG, "Adding Sample with ID: ${sample.id.toString()} and path: ${sample.filePath.toString()}")
+        val path = context.getDir("samples", 0)?.absolutePath
+        sample.filePath = "$path/${sample.id}.3gp"
+        withContext(Dispatchers.IO) {
+            File(sample.filePath).createNewFile()
+        }
+        Log.d(TAG, "Adding Sample with ID: ${sample.id} and path: ${sample.filePath}")
         database.samplesDao().addSample(sample)
+    }
+
+    suspend fun duplicateSample(sample: Sample) {
+        val path = context.getDir("samples", 0)?.absolutePath
+        val newId = UUID.randomUUID()
+        val newSample = Sample(
+            id = newId,
+            title = sample.title + "-copy",
+            description = sample.description,
+            filePath = "$path/${newId}.3gp"
+        )
+        withContext(Dispatchers.IO) {
+            File(newSample.filePath).createNewFile()
+        }
+        FilesInator.copyFile(sample.filePath, newSample.filePath)
+        database.samplesDao().addSample(newSample)
     }
 
     fun deleteSample(sample: Sample) {
@@ -50,7 +76,7 @@ class SampleRepository private constructor(
             if (file.exists()) {
                 file.canonicalFile.delete()
             }
-            Log.d(TAG, file.exists().toString())
+            Log.d(TAG, "File deleted: ${ !file.exists() }")
 
             database.samplesDao().deleteSample(sample)
         }

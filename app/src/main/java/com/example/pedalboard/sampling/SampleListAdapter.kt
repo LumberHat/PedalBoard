@@ -1,10 +1,9 @@
-package com.example.pedalboard
+package com.example.pedalboard.sampling
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pedalboard.databinding.ListItemSampleBinding
-import com.example.pedalboard.sampling.Sample
 import java.util.UUID
 
 class SampleHolder(
@@ -12,7 +11,9 @@ class SampleHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(sample: Sample, onSampleClicked: (sampleId: UUID) -> Unit) {
-        binding.sampleTitle.text = if (sample.title != "") sample.title else "untitled"
+        binding.sampleTitle.text = if (sample.title != "") sample.title else "Untitled"
+        binding.sampleDescription.text = sample.description
+
 
         binding.root.setOnClickListener {
             onSampleClicked(sample.id)

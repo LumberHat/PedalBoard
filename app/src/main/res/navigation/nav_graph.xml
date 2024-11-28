@@ -7,12 +7,15 @@
 
     <fragment
         android:id="@+id/sampleListFragment"
-        android:name="com.example.pedalboard.SampleListFragment"
+        android:name="com.example.pedalboard.sampling.SampleListFragment"
         android:label="SampleListFragment"
         tools:layout="@layout/fragment_sample_list">
         <action
             android:id="@+id/show_sample_creator"
             app:destination="@id/sampleCreatorFragment" />
+        <action
+            android:id="@+id/show_filter_list"
+            app:destination="@id/filterListFragment" />
     </fragment>
     <fragment
         android:id="@+id/sampleCreatorFragment"
@@ -21,6 +24,26 @@
         tools:layout="@layout/fragment_sample_creator">
         <argument
             android:name="sampleId"
+            app:argType="java.util.UUID" />
+    </fragment>
+    <fragment
+        android:id="@+id/filterListFragment"
+        android:name="com.example.pedalboard.filtering.FilterListFragment"
+        android:label="FilterListFragment"
+        tools:layout="@layout/fragment_filter_list">
+        <action
+            android:id="@+id/show_sample_list"
+            app:destination="@id/sampleListFragment" />
+        <action
+            android:id="@+id/show_filter_creator"
+            app:destination="@id/filterCreatorFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/filterCreatorFragment"
+        android:name="com.example.pedalboard.filtering.FilterCreatorFragment"
+        android:label="FilterCreatorFragment">
+        <argument
+            android:name="filterId"
             app:argType="java.util.UUID" />
     </fragment>
 </navigation>

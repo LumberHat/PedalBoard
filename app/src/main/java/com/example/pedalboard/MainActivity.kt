@@ -10,7 +10,9 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import androidx.navigation.ui.setupWithNavController
 import com.example.pedalboard.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,7 +21,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.toolbar))
+
+
+        val navBar: BottomNavigationView = binding.navigationBar
+        val navController = findNavController(R.id.fragment_container)
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.show_sample_list, R.id.show_filter_list
+            )
+        )
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        navBar.setupWithNavController(navController)
     }
 }

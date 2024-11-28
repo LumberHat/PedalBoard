@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/sample_title_label"
+            android:id="@+id/filter_title_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -23,7 +23,7 @@
             android:textSize="28sp" />
 
         <EditText
-            android:id="@+id/sample_title"
+            android:id="@+id/filter_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -31,7 +31,7 @@
             android:inputType="text" />
 
         <TextView
-            android:id="@+id/sample_description_label"
+            android:id="@+id/filter_description_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -40,7 +40,7 @@
             android:textSize="28sp" />
 
         <EditText
-            android:id="@+id/sample_description"
+            android:id="@+id/filter_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/description_hint"
@@ -53,14 +53,14 @@
             android:layout_marginTop="20dp">
 
             <Button
-                android:id="@+id/record_sample"
+                android:id="@+id/record_filter"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
                 android:text="@string/record" />
             <Button
-                android:id="@+id/play_sample"
+                android:id="@+id/play_filter"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
