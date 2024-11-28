@@ -27,4 +27,8 @@
     <string name="save_sample">Save Sample</string>
     <string name="test">Test</string>
     <string name="init">Init</string>
+    <string name="stop">Stop</string>
+    <string name="playback_error">Error occured with playback</string>
+    <string name="recording_error">Recording Error Occured</string>
+    <string name="sample_description">Description</string>
 </resources>

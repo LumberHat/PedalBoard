@@ -3,34 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/recorderFragment">
+    app:startDestination="@id/sampleListFragment">
 
-    <fragment
-        android:id="@+id/recorderFragment"
-        android:name="com.example.pedalboard.RecorderFragment"
-        android:label="RecorderFragment"
-        tools:layout="@layout/fragment_recorder">
-        <action
-            android:id="@+id/show_player"
-            app:destination="@id/playerFragment" />
-        <action
-            android:id="@+id/show_sample_list"
-            app:destination="@id/sampleListFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/playerFragment"
-        android:name="com.example.pedalboard.PlayerFragment"
-        android:label="PlayerFragment"
-        tools:layout="@layout/fragment_player">
-        <action
-            android:id="@+id/show_recorder"
-            app:destination="@id/recorderFragment" />
-    </fragment>
     <fragment
         android:id="@+id/sampleListFragment"
         android:name="com.example.pedalboard.SampleListFragment"
-        android:label="SampleListFragment" >
+        android:label="SampleListFragment"
+        tools:layout="@layout/fragment_sample_list">
         <action
             android:id="@+id/show_sample_creator"
             app:destination="@id/sampleCreatorFragment" />

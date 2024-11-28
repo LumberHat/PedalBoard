@@ -20,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentSampleCreatorBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -72,6 +73,8 @@ class SampleCreatorFragment: Fragment() {
         binding.apply {
 
             playSample.setOnClickListener {
+                Log.d(TAG, "clicked play")
+
                 play()
             }
             recordSample.setOnClickListener {
@@ -119,9 +122,10 @@ class SampleCreatorFragment: Fragment() {
         Log.d(TAG, "tempFilePath: ${if (this::tempFilePath.isInitialized) tempFilePath else "Uninitialized"}\n" +
                 "sampleFilePath: ${if (this::sampleFilePath.isInitialized) sampleFilePath else "Uninitialized"}")
     }
-
+    lateinit var menu: Menu
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
+        this.menu = menu
         inflater.inflate(R.menu.fragment_sample_creator, menu)
     }
 
@@ -149,6 +153,9 @@ class SampleCreatorFragment: Fragment() {
 
     private fun play() {
         Log.d(TAG,"playing")
+        binding.playSample.text = "..."
+        binding.playSample.isEnabled = false
+
         audioPlayer = MediaPlayer().apply {
             try {
                 setDataSource(if (recorded) tempFilePath else sampleFilePath)
@@ -156,19 +163,30 @@ class SampleCreatorFragment: Fragment() {
                 start()
             } catch (e: IOException) {
                 Log.e(TAG, "prepare() failed in playRecording()")
+                Snackbar.make(requireView(), R.string.playback_error, Snackbar.LENGTH_LONG).show()
+                binding.playSample.isEnabled = true
+                binding.playSample.text = getString(R.string.play)
+                audioPlayer?.release()
+                audioPlayer = null
             }
         }
 
         audioPlayer?.setOnCompletionListener {
+            binding.playSample.isEnabled = true
+            binding.playSample.text = getString(R.string.play)
             audioPlayer?.release()
             audioPlayer = null
         }
     }
 
-
     private var recording: Boolean = false
     private var recorded: Boolean = false
     private fun toggleRecording() {
+        recording = !recording
+        binding.recordSample.text = if (!recording) getString(R.string.record) else getString(R.string.stop)
+        menu.getItem(0).setEnabled(!recording)
+        menu.getItem(1).setEnabled(!recording)
+
         if (recording) {
             audioRecorder?.apply {
                 stop()
@@ -188,13 +206,19 @@ class SampleCreatorFragment: Fragment() {
                     prepare()
                 } catch (e: IOException) {
                     Log.e(TAG, "prepare() failed")
+                    Snackbar.make(requireView(), R.string.recording_error, Snackbar.LENGTH_LONG).show()
+
+                    audioRecorder?.apply {
+                        stop()
+                        release()
+                    }
+                    audioRecorder = null;
                 }
 
                 start()
             }
             Log.d(TAG, "Starting Recording")
         }
-        recording = !recording
     }
 
     private fun delete() {
