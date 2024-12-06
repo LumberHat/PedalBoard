@@ -1,11 +1,16 @@
 package com.example.pedalboard
 
+import com.example.pedalboard.filtering.baseFilters.LiveBass
 import android.content.Context
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Log
 import java.io.File
 import java.io.IOException
+import android.media.audiofx.PresetReverb
+import androidx.core.net.toUri
+import com.example.pedalboard.filtering.Filter
+import com.example.pedalboard.filtering.baseFilters.DigitalFilter
 
 private const val TAG = "AudioHub"
 
@@ -13,7 +18,7 @@ class AudioHub private constructor(context: Context)
 {
 
     val recorder: AudioRecorder = AudioRecorder()
-    val player: AudioPlayer = AudioPlayer()
+    val player: AudioPlayer = AudioPlayer(context)
 
     private lateinit var sampleFile: File
     private val tempFile: File = File("${context.cacheDir.path}/temp.3gp")
@@ -25,16 +30,43 @@ class AudioHub private constructor(context: Context)
         recorder.setDestinationFile(tempFile)
     }
 
+    fun setFile(path: String) {
+        setFile(File(path))
+    }
+
+    fun getPlayerSession(): Int {
+        return player.getSessionId()
+    }
+
     fun writeFromCache() {
         FilesInator.apply {
             copyFile(tempFile, sampleFile)
-            deleteFile(tempFile)
         }
     }
 
     fun killAll() {
         player.kill()
         recorder.kill()
+    }
+
+    fun play(listener: () -> Unit) {
+        Log.d(TAG, "Playing unfiltered")
+        player.setOnCompletionListener(listener)
+        player.play()
+    }
+
+    fun playFiltered(filter: DigitalFilter, listener: () -> Unit) {
+        filter.setSession(player.getSessionId())
+        Log.d(TAG, "Playing filtered for filter ${filter}")
+        player.setOnCompletionListener { listener(); filter.close() }
+        player.play()
+    }
+
+    fun playFiltered(filterCreator: ((Int) -> DigitalFilter), listener: () -> Unit) {
+        val filter = filterCreator(player.getSessionId())
+        Log.d(TAG, "Playing filtered for filter ${filter}")
+        player.setOnCompletionListener { listener(); filter.close() }
+        player.play()
     }
 
     companion object {
@@ -53,35 +85,45 @@ class AudioHub private constructor(context: Context)
     }
 }
 
-class AudioPlayer {
+class AudioPlayer (private val context: Context) {
     private var player: MediaPlayer? = null
-
     private var file: File? = null
 
+    init {
+        player = MediaPlayer()
+    }
 
     fun setSourceFile(srcFile: File) {
         file = srcFile
     }
 
-    @Throws(IOException::class)
-    fun play(listener: (() -> Unit)) {
-        player = MediaPlayer().apply {
-            try {
-                setDataSource(file?.path)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                release()
-                listener()
-                throw(e)
-            }
+    fun getSessionId(): Int {
+        if (player == null) {
+            player = MediaPlayer().apply { prepare() }
         }
+        return player!!.audioSessionId
+    }
 
-        player?.setOnCompletionListener {
-            player?.release()
-            listener()
-            player = null
-        }
+    fun play() {
+        checkNotNull(player) {"Player not created"}
+            .start()
+    }
+
+    fun setOnCompletionListener(listener: () -> Unit) {
+        checkNotNull(player) {"Player not created"}
+            .setOnCompletionListener {reset(); listener()}
+    }
+
+    fun close() {
+        checkNotNull(player) {"Player not created"}
+            .release()
+        player = null
+    }
+
+    fun reset() {
+        checkNotNull(player) {"Player not created"}
+            .release()
+        player = MediaPlayer()
     }
 
     fun kill() {

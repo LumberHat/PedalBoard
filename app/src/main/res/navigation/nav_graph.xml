@@ -45,5 +45,13 @@
         <argument
             android:name="filterId"
             app:argType="java.util.UUID" />
+        <action
+            android:id="@+id/show_sample_picker"
+            app:destination="@id/sampleSelectorFragment" />
     </fragment>
+    <dialog
+        android:id="@+id/sampleSelectorFragment"
+        android:name="com.example.pedalboard.sampling.SampleSelectorFragment"
+        android:label="SampleSelectorFragment" >
+    </dialog>
 </navigation>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.room.Room
 import com.example.pedalboard.FilesInator
+import com.example.pedalboard.filtering.baseFilters.FilterData
 import com.example.pedalboard.filtering.database.FiltersDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,12 +45,7 @@ class FilterRepository private constructor(
     }
 
     suspend fun addFilter(filter: Filter) {
-        val path = context.getDir("filters", 0)?.absolutePath
-        filter.filePath = "$path/${filter.id}.3gp"
-        withContext(Dispatchers.IO) {
-            File(filter.filePath).createNewFile()
-        }
-        Log.d(TAG, "Adding Filter with ID: ${filter.id} and path: ${filter.filePath}")
+        Log.d(TAG, "Adding Filter with ID: ${filter.id}")
         database.filtersDao().addFilter(filter)
     }
 
@@ -60,24 +56,13 @@ class FilterRepository private constructor(
             id = newId,
             title = filter.title + "-copy",
             description = filter.description,
-            filePath = "$path/${newId}.3gp"
+            config = FilterData()
         )
-        withContext(Dispatchers.IO) {
-            File(newFilter.filePath).createNewFile()
-        }
-        FilesInator.copyFile(filter.filePath, newFilter.filePath)
         database.filtersDao().addFilter(newFilter)
     }
 
     fun deleteFilter(filter: Filter) {
         coroutineScope.launch {
-            val file: File = File(filter.filePath)
-            file.delete()
-            if (file.exists()) {
-                file.canonicalFile.delete()
-            }
-            Log.d(TAG, "File deleted: ${ !file.exists() }")
-
             database.filtersDao().deleteFilter(filter)
         }
     }

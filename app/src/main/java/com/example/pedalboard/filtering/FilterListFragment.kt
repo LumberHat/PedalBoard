@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentFilterListBinding
+import com.example.pedalboard.filtering.baseFilters.FilterData
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -99,7 +100,7 @@ class FilterListFragment : Fragment() {
                 id = UUID.randomUUID(),
                 title = "",
                 description = "",
-                filePath = ""
+                config = FilterData()
             )
 
             filterListViewModel.addFilter(newFilter)

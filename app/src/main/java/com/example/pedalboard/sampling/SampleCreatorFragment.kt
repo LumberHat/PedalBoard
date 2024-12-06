@@ -22,6 +22,9 @@ import com.example.pedalboard.AudioPlayer
 import com.example.pedalboard.AudioRecorder
 import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentSampleCreatorBinding
+import com.example.pedalboard.filtering.Filter
+import com.example.pedalboard.filtering.baseFilters.Eq
+import com.example.pedalboard.filtering.baseFilters.LiveBass
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -77,7 +80,6 @@ class SampleCreatorFragment: Fragment() {
             recordSample.setOnClickListener {
                 toggleRecording()
             }
-
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -91,9 +93,6 @@ class SampleCreatorFragment: Fragment() {
 
     private fun initialize() {
         sampleFile = File(sampleCreatorViewModel.sample.value?.filePath.toString())
-
-
-
         audioHub.setFile(sampleFile)
         logAll()
     }
@@ -143,15 +142,18 @@ class SampleCreatorFragment: Fragment() {
         binding.playSample.isEnabled = false
 
         try {
-            audioHub.player.play {
+            audioHub.play {
                 binding.playSample.isEnabled = true
                 binding.playSample.text = getString(R.string.play)
             }
         } catch (e: IOException) {
-            Log.e(TAG, "playback failed with exception: ${e}")
+            Log.e(TAG, "playback failed with exception: $e")
+            binding.playSample.isEnabled = true
+            binding.playSample.text = getString(R.string.play)
             Snackbar.make(requireView(), R.string.playback_error, Snackbar.LENGTH_LONG).show()
         }
     }
+
 
     private fun toggleRecording() {
         try {

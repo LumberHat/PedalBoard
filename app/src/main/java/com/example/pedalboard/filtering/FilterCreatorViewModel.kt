@@ -3,6 +3,8 @@ package com.example.pedalboard.filtering
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.pedalboard.sampling.Sample
+import com.example.pedalboard.sampling.SampleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,12 +16,23 @@ class FilterCreatorViewModel(filterId: UUID) : ViewModel() {
 
     private val filterRepository = FilterRepository.get()
 
+    private val sampleRepository = SampleRepository.get()
+
+    private val _samples: MutableStateFlow<List<Sample>> = MutableStateFlow(emptyList())
+    val samples: StateFlow<List<Sample>>
+        get() = _samples.asStateFlow()
+
+
     private val _filter: MutableStateFlow<Filter?> = MutableStateFlow(null)
     val filter: StateFlow<Filter?> = _filter.asStateFlow()
 
     init {
         viewModelScope.launch {
             _filter.value = filterRepository.getFilter(filterId)
+
+            sampleRepository.getSamples().collect {
+                _samples.value = it
+            }
         }
     }
 
