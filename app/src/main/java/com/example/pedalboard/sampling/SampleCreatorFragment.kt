@@ -17,7 +17,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.pedalboard.AudioHub
-import com.example.pedalboard.FilesInator
 import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentSampleCreatorBinding
 import com.google.android.material.snackbar.Snackbar
@@ -26,7 +25,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
-
 
 private const val TAG = "SampleCreatorFragment"
 

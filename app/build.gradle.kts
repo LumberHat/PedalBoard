@@ -61,11 +61,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
-
-    implementation(fileTree(mapOf(
-        "dir" to "C:\\Users\\lsb14\\OneDrive\\Desktop\\TarsosDSP-2.4",
-        "include" to listOf("*.aar", "*.jar")
-    )))
     implementation(libs.gson)
 
     annotationProcessor(libs.androidx.room.compiler)

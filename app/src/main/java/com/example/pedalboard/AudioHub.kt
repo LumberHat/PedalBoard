@@ -20,8 +20,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.math.log
 
-private const val TAG = "AudioHub"
-
+private const val TAG = "AUDIO_HUB"
 class AudioHub private constructor(val context: Context)
 {
     val recorder: AudioRecorder
@@ -47,11 +46,11 @@ class AudioHub private constructor(val context: Context)
     fun setSample(sample: Sample) {
         _sample = sample
         context.openFileOutput(sample.id.toString() + ".3gp", Context.MODE_PRIVATE).close()
-        player.setSource(sample.id.toString() + ".3gp")
+        //player.setSource(sample.id.toString() + ".3gp")
     }
 
     fun getPlayerSession(): Int {
-        return player.getSessionId()
+        return player.sessionId
     }
 
     fun writeFromCache() {
@@ -70,8 +69,8 @@ class AudioHub private constructor(val context: Context)
         recorder.kill()
     }
 
-    fun play(listener: () -> Unit) {
-        player.setOnCompletionListener(listener)
+    fun play(listener: (p: MediaPlayer) -> Unit) {
+        player.onCompleteListener = listener
         player.play()
     }
 
@@ -99,61 +98,99 @@ class AudioHub private constructor(val context: Context)
     }
 }
 
+val statusMap: Map<Int, String> = mapOf(0 to "gone", 1 to "idle", 2 to "initialized", 3 to "prepared",
+                                        4 to "preparing", 5 to "started", 6 to "stopped")
+
 class AudioPlayer (
     private val context: Context,
-    private var source: String) {
+    private var source: String)
+{
+    private var status = 0
+    var sessionId = -1
+    private var _onCompleteListener: ((p: MediaPlayer) -> Unit) = {}
+    var onCompleteListener
+        get() = _onCompleteListener
+        set(listener) {
+            _onCompleteListener = {p -> stop(); reset(); listener(p)}
+        }
 
-    lateinit var player: MediaPlayer
-    var listener: (() -> Unit) = {}
-    private var inputStream: FileInputStream
+    private lateinit var player: MediaPlayer
+    private var inputStream: FileInputStream = context.openFileInput(source)
 
     init {
-        inputStream = context.openFileInput(source)
-        var f = File(context.filesDir, source).toUri()
-        Log.d(TAG, "THIS SHOULD APPEAR ONLY ONCE $f  ${f.path}")
-        val myUri: Uri = f
-        player = MediaPlayer()
+        var fileURI: Uri = File(context.filesDir, source).toUri()
+        setUp(inputStream.fd)
     }
 
-    fun setSource(src: String) {
-        source = src
-        val t = player.audioSessionId
-        player.release()
-    }
+    private fun setUp(fd: FileDescriptor) {
+        if (status == 0) {
+            Log.d(TAG, "setUp: Creating new MediaPlayer")
+            player = MediaPlayer()
+            status = 1
+        }
+        reset()
+        setDataSource(fd)
+        prepare()
 
-    fun getSessionId(): Int {
-        return player.audioSessionId
+        sessionId = player.audioSessionId
     }
 
     fun play() {
-        player.start()
+        player.setOnCompletionListener(onCompleteListener)
+        start()
     }
 
-    fun setUp() {
-
+    private fun reset() {
+        if (status != 0) {
+            Log.d(TAG, "reset")
+            player.reset()
+            status = 1 //idle
+        } else Log.e(TAG, "reset: CANCELED status: ${statusMap[status]}")
+        
     }
 
-    fun setOnCompletionListener(listener: () -> Unit) {
-        Log.d(TAG, "setOnCompletionListener")
-        this.listener = listener
+    private fun setDataSource(fd: FileDescriptor) {
+        if (status == 1) {
+            Log.d(TAG, "setDataSource: $fd")
+            player.setDataSource(fd)
+            status = 2
+        } else Log.e(TAG, "setDataSource: CANCELED status: ${statusMap[status]}")
+    }
+    //my 2 == their 1
+    private fun prepare() {
+        if (status != 2) {
+            Log.d(TAG, "prepare")
+            player.prepare()
+            status = 3
+        } else Log.e(TAG, "prepare: CANCELED status: ${statusMap[status]}")
+    }
+
+    private fun start() {
+        if (status == 3) {
+            Log.d(TAG, "start")
+            player.start()
+            status = 5
+        } else Log.e(TAG, "start: CANCELED status: ${statusMap[status]}")
+    }
+
+    private fun stop() {
+        if (status in 2..5 && status != 4) {
+            player.stop()
+            status = 6
+        }  else Log.e(TAG, "stop: CANCELED status: ${statusMap[status]}")
+    }
+
+    private fun release() {
+        player.release()
+        status = 0
     }
 
     fun close() {
         player.release()
     }
 
-    fun reset() {
-        Log.d(TAG, "reset: ")
-        inputStream?.close()
-        player.release()
-        player = MediaPlayer()
-    }
-
     fun kill() {
-//        player.apply {
-//            stop()
-//            release()
-//        }
+        release()
     }
 }
 
