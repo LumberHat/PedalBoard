@@ -14,26 +14,18 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.withStarted
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.pedalboard.AudioHub
-import com.example.pedalboard.AudioPlayer
-import com.example.pedalboard.AudioRecorder
+import com.example.pedalboard.FilesInator
 import com.example.pedalboard.R
 import com.example.pedalboard.databinding.FragmentSampleCreatorBinding
-import com.example.pedalboard.filtering.Filter
-import com.example.pedalboard.filtering.baseFilters.Eq
-import com.example.pedalboard.filtering.baseFilters.LiveBass
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
-import java.util.UUID
 
 
 private const val TAG = "SampleCreatorFragment"
@@ -85,17 +77,12 @@ class SampleCreatorFragment: Fragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sampleCreatorViewModel.sample.collect { sample ->
                     sample?.let { updateUi(it) }
-                    initialize()
                 }
             }
         }
     }
 
-    private fun initialize() {
-        sampleFile = File(sampleCreatorViewModel.sample.value?.filePath.toString())
-        audioHub.setFile(sampleFile)
-        logAll()
-    }
+
 
     private fun logAll() {
         logSample()
@@ -103,8 +90,7 @@ class SampleCreatorFragment: Fragment() {
 
     private fun logSample() {
         Log.d(TAG, "Sample: ${sampleCreatorViewModel.sample.value?.id}\n" +
-                "Title: ${sampleCreatorViewModel.sample.value?.title}\n" +
-                "Path: ${sampleCreatorViewModel.sample.value?.filePath}")
+                "Title: ${sampleCreatorViewModel.sample.value?.title}\n")
     }
 
     lateinit var menu: Menu
@@ -157,7 +143,7 @@ class SampleCreatorFragment: Fragment() {
 
     private fun toggleRecording() {
         try {
-            audioHub.recorder.toggleRecording()
+            audioHub.toggleRecording()
         } catch (e: IOException) {
             Log.e(TAG, "recording failed with exception: ${e}")
             Snackbar.make(requireView(), R.string.recording_error, Snackbar.LENGTH_LONG).show()
@@ -196,6 +182,7 @@ class SampleCreatorFragment: Fragment() {
     }
 
     private fun updateUi(sample: Sample) {
+        audioHub.setSample(sample)
         binding.apply {
             if (sampleTitle.text.toString() != sample.title) {
                 sampleTitle.setText(sample.title)

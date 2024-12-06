@@ -8,6 +8,5 @@ import java.util.UUID
 data class Sample(
     @PrimaryKey val id: UUID,
     var title: String,
-    var description: String,
-    var filePath: String
+    var description: String
 )

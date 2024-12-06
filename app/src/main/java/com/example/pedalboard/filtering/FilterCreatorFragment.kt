@@ -46,6 +46,7 @@ import android.app.Activity
 import android.widget.Button
 import com.example.pedalboard.FilesInator
 import com.example.pedalboard.filtering.baseFilters.DigitalFilter
+import com.example.pedalboard.filtering.baseFilters.FilterData
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
 
@@ -59,7 +60,7 @@ class FilterCreatorFragment: Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private val audioHub = AudioHub.get()
+    lateinit var audioHub: AudioHub
     private var testSample: Sample? = null
     private var digitalFilter: DigitalFilter? = null
 
@@ -79,13 +80,14 @@ class FilterCreatorFragment: Fragment() {
         _binding =
             FragmentFilterCreatorBinding.inflate(inflater, container, false)
 
-
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        audioHub = AudioHub.get()
+
 
         setFragmentResultListener(
             SampleSelectorFragment.REQUEST_KEY_SAMPLE
@@ -111,18 +113,14 @@ class FilterCreatorFragment: Fragment() {
         } else if (testSample == null) {
             Snackbar.make(requireView(), "Select a sample first", Snackbar.LENGTH_LONG).show()
             return
-        } else if (testSample!!.filePath == null) {
-            Snackbar.make(requireView(), "Selected sample doesn't have an associated audio file", Snackbar.LENGTH_LONG).show()
-            return
         }
-        audioHub.setFile(testSample!!.filePath)
 
         Log.d(TAG,"playing")
         binding.playFilter.text = "..."
         binding.playFilter.isEnabled = false
 
         try {
-            audioHub.playFiltered(digitalFilter!!) {
+            audioHub.play {
                 binding.playFilter.isEnabled = true
                 binding.playFilter.text = getString(R.string.play)
             }
@@ -131,7 +129,7 @@ class FilterCreatorFragment: Fragment() {
             binding.playFilter.isEnabled = true
             binding.playFilter.text = getString(R.string.play)
             Snackbar.make(requireView(), R.string.playback_error, Snackbar.LENGTH_LONG).show()
-        } catch (e: IllegalStateException) {
+        } catch (e: Exception) {
             Log.e(TAG, "The media player was in an invalid state. It likely was provided an invalid file path")
             binding.playFilter.isEnabled = true
             binding.playFilter.text = getString(R.string.play)
@@ -150,6 +148,7 @@ class FilterCreatorFragment: Fragment() {
         requireActivity().runOnUiThread {
             testSample = sample
             binding.loadSample.text = testSample!!.title
+            audioHub.setSample(sample)
         }
     }
 
@@ -198,10 +197,15 @@ class FilterCreatorFragment: Fragment() {
 
     private fun save() {
         Log.d(TAG,"Saving")
+        var filterConfig: FilterData = FilterData()
+        if (digitalFilter != null) {
+            filterConfig = digitalFilter!!.getData()
+        }
         filterCreatorViewModel.updateFilter { oldFilter ->
-            oldFilter.copy(title = binding.filterTitle.text.toString(),
+            oldFilter.copy(
+                title = binding.filterTitle.text.toString(),
                 description = binding.filterDescription.text.toString(),
-                config = digitalFilter!!.getData())
+                config = filterConfig)
         }
     }
 
@@ -239,14 +243,14 @@ class FilterCreatorFragment: Fragment() {
                 )
             }
         }
-        if (testSample != null) {
-            audioHub.setFile(File(testSample!!.filePath))
-            val s = audioHub.getPlayerSession()
-            digitalFilter = DigitalFilter.fromData(filter.config, s)
+        try {
+            digitalFilter = DigitalFilter.fromFilter(filter)
+        } catch (e: Exception) {
+            Snackbar.make(requireView(), "Could not create digital filter" , Snackbar.LENGTH_SHORT).show()
         }
 
-
         if (digitalFilter != null) {
+            Log.d(TAG, "updateUi: filter not null?: $digitalFilter ${digitalFilter!!.componentCount()}")
             for (i in 0..digitalFilter!!.componentCount()) {
                 val settingsBar = SettingsBarFragment(digitalFilter!!.getComponent(i))
                 parentFragmentManager.beginTransaction()
@@ -255,9 +259,15 @@ class FilterCreatorFragment: Fragment() {
         } else {
             val b = Button(context)
             b.setOnClickListener {
-                digitalFilter = Eq(audioHub.getPlayerSession())
+                digitalFilter = Eq(filter)
+                updateUi(filter)
+                binding.componentSettings.removeView(b)
             }
-            digitalFilter = Eq(audioHub.getPlayerSession())
+            b.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+            b.text = "Default to EQ"
+            binding.componentSettings.addView(b)
         }
     }
 }
@@ -286,6 +296,7 @@ class SettingsBarFragment(private val component: FilterComponent) : Fragment() {
         binding.apply {
             componentTitle.text = component.label
             componentValue.text = component.value.toString()
+            seekBar.progress = component.value
             if (component.max != null) {
                 seekBar.max = component.max
             }

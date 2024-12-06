@@ -5,14 +5,17 @@ import android.net.rtp.AudioStream
 import android.provider.MediaStore.Audio
 import android.util.Log
 import be.tarsos.dsp.AudioDispatcher
+import com.example.pedalboard.AudioHub
+import com.example.pedalboard.filtering.Filter
 import kotlinx.serialization.Serializable
 import java.io.File
+import kotlin.math.log
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 private const val TAG = "BASE_FILTERS"
-abstract class DigitalFilter(protected var audioSession: Int) {
+abstract class DigitalFilter(protected var filter: Filter) {
     private var filterComponents: List<FilterComponent> = emptyList()
     open val name = "Default"
 
@@ -35,23 +38,19 @@ abstract class DigitalFilter(protected var audioSession: Int) {
         return data
     }
 
-    open fun setSession(audioSession: Int) {
-        Log.d(TAG, "session id: $audioSession")
-        this.audioSession = audioSession
-    }
     abstract fun close()
 
     companion object {
-        fun fromData(data: FilterData, audioSession: Int): DigitalFilter {
-            val filter = bigSwitchStatement(data.filterType)(audioSession)
-            filter.filterComponents = data.config
-            return filter
+        fun fromFilter(filter: Filter): DigitalFilter {
+            val digitalFilter = bigSwitchStatement(filter.config.filterType)(filter)
+            digitalFilter.filterComponents = filter.config.config
+            return digitalFilter
         }
 
-        fun bigSwitchStatement(str: String) : ((audioSession: Int) -> DigitalFilter){
+        fun bigSwitchStatement(str: String) : ((filter:Filter) -> DigitalFilter){
             when (str) {
-                "Eq" -> return {audioSession -> Eq(audioSession)}
-                else -> return {audioSession -> LiveBass(audioSession)}
+                "Eq" -> return {filter -> Eq(filter)}
+                else -> return {filter -> Eq(filter)}
             }
         }
     }
@@ -84,11 +83,10 @@ class FilterData() {
     var filterType: String = ""
 }
 
-class LiveBass(audioSession: Int) : DigitalFilter(audioSession) {
+class LiveBass(filter: Filter) : DigitalFilter(filter) {
     lateinit var effect: BassBoost
 
-    override fun setSession(audioSession: Int) {
-        super.setSession(audioSession)
+    fun setSession(audioSession: Int) {
         this.effect = BassBoost(0, audioSession)
         this.effect.setEnabled(true)
         this.effect.setStrength(255)
@@ -100,7 +98,7 @@ class LiveBass(audioSession: Int) : DigitalFilter(audioSession) {
     }
 }
 
-class Eq(audioSession: Int) : DigitalFilter(audioSession) {
+class Eq(filter: Filter) : DigitalFilter(filter) {
     override val name = "Eq"
 
     var effect: Equalizer
@@ -109,6 +107,8 @@ class Eq(audioSession: Int) : DigitalFilter(audioSession) {
     var max: Short = -1
 
     init {
+        val audioSession = AudioHub.get().getPlayerSession()
+        Log.d(TAG, "Session: $audioSession")
         this.effect = Equalizer(0, audioSession)
         bands = this.effect.numberOfBands
         val (mint, maxt) = this.effect.bandLevelRange

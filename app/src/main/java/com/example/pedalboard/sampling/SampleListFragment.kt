@@ -95,11 +95,11 @@ class SampleListFragment : Fragment() {
     }
     private fun showNewSample() {
         viewLifecycleOwner.lifecycleScope.launch {
+            val newId = UUID.randomUUID()
             val newSample = Sample(
-                id = UUID.randomUUID(),
+                id = newId,
                 title = "",
-                description = "",
-                filePath = ""
+                description = ""
             )
 
             sampleListViewModel.addSample(newSample)

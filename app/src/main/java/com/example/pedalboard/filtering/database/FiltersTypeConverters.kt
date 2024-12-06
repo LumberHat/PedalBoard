@@ -12,7 +12,6 @@ class FiltersTypeConverters {
     fun fromFilterData(data: FilterData): String {
         return Gson().toJson(data, FilterData::class.java)
     }
-
     @TypeConverter
     fun toFilterData(str: String): FilterData {
         return Gson().fromJson(str, FilterData::class.java)

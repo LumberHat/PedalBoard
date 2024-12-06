@@ -44,12 +44,7 @@ class SampleRepository private constructor(
     }
 
     suspend fun addSample(sample: Sample) {
-        val path = context.getDir("samples", 0)?.absolutePath
-        sample.filePath = "$path/${sample.id}.3gp"
-        withContext(Dispatchers.IO) {
-            File(sample.filePath).createNewFile()
-        }
-        Log.d(TAG, "Adding Sample with ID: ${sample.id} and path: ${sample.filePath}")
+        Log.d(TAG, "Adding Sample with ID: ${sample.id}")
         database.samplesDao().addSample(sample)
     }
 
@@ -59,25 +54,13 @@ class SampleRepository private constructor(
         val newSample = Sample(
             id = newId,
             title = sample.title + "-copy",
-            description = sample.description,
-            filePath = "$path/${newId}.3gp"
+            description = sample.description
         )
-        withContext(Dispatchers.IO) {
-            File(newSample.filePath).createNewFile()
-        }
-        FilesInator.copyFile(sample.filePath, newSample.filePath)
         database.samplesDao().addSample(newSample)
     }
 
     fun deleteSample(sample: Sample) {
         coroutineScope.launch {
-            val file: File = File(sample.filePath)
-            file.delete()
-            if (file.exists()) {
-                file.canonicalFile.delete()
-            }
-            Log.d(TAG, "File deleted: ${ !file.exists() }")
-
             database.samplesDao().deleteSample(sample)
         }
     }
