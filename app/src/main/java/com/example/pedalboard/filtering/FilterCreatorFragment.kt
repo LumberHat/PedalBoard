@@ -88,7 +88,6 @@ class FilterCreatorFragment: Fragment() {
 
         audioHub = AudioHub.get()
 
-
         setFragmentResultListener(
             SampleSelectorFragment.REQUEST_KEY_SAMPLE
         ) {_, bundle ->
@@ -241,32 +240,6 @@ class FilterCreatorFragment: Fragment() {
                     FilterCreatorFragmentDirections.showSamplePicker()
                 )
             }
-        }
-        try {
-            digitalFilter = DigitalFilter.fromFilter(filter)
-        } catch (e: Exception) {
-            Snackbar.make(requireView(), "Could not create digital filter" , Snackbar.LENGTH_SHORT).show()
-        }
-
-        if (digitalFilter != null) {
-            Log.d(TAG, "updateUi: filter not null?: $digitalFilter ${digitalFilter!!.componentCount()}")
-            for (i in 0..digitalFilter!!.componentCount()) {
-                val settingsBar = SettingsBarFragment(digitalFilter!!.getComponent(i))
-                parentFragmentManager.beginTransaction()
-                    .add(binding.componentSettings.id, settingsBar, "$i").commit()
-            }
-        } else {
-            val b = Button(context)
-            b.setOnClickListener {
-                digitalFilter = Eq(filter)
-                updateUi(filter)
-                binding.componentSettings.removeView(b)
-            }
-            b.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
-            b.text = "Default to EQ"
-            binding.componentSettings.addView(b)
         }
     }
 }

@@ -89,9 +89,6 @@ class AudioHub private constructor(val context: Context)
     }
 }
 
-val statusMap: Map<Int, String> = mapOf(0 to "gone", 1 to "idle", 2 to "initialized", 3 to "prepared",
-                                        4 to "preparing", 5 to "started", 6 to "stopped")
-
 class AudioPlayer (
     private val context: Context,
     var sourceName: String)
@@ -118,16 +115,6 @@ class AudioPlayer (
         audioPlayer.setOnCompletionListener {
             p->onCompleteListener();p.release();src.close()
         }
-    }
-
-
-    private fun reset() {
-        if (status != 0) {
-            Log.d(TAG, "reset")
-            player.reset()
-            status = 1 //idle
-        } else Log.e(TAG, "reset: CANCELED status: ${statusMap[status]}")
-        
     }
 }
 

@@ -1,6 +1,7 @@
 package com.example.pedalboard.sampling
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +10,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -25,6 +28,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
+
 
 private const val TAG = "SampleCreatorFragment"
 
@@ -85,8 +89,6 @@ class SampleCreatorFragment: Fragment() {
         }
     }
 
-
-
     private fun logAll() {
         logSample()
     }
@@ -108,6 +110,11 @@ class SampleCreatorFragment: Fragment() {
             R.id.duplicate_sample -> {
                 Log.d(TAG, "Clicked Duplicate")
                 duplicate()
+                true
+            }
+            R.id.share_sample -> {
+                Log.d(TAG, "Clicked Share")
+                share()
                 true
             }
             R.id.delete_sample -> {
@@ -192,6 +199,30 @@ class SampleCreatorFragment: Fragment() {
             if (sampleDescription.text.toString() != sample.description) {
                 sampleDescription.setText(sample.description)
             }
+        }
+    }
+
+    private fun share() {
+        sampleCreatorViewModel.sample.value?.let {
+            val reportIntent = Intent(Intent.ACTION_SEND).apply {
+                val uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.pedalboard.fileprovider",
+                    File(requireContext().filesDir, it.id.toString()+".3gp")
+                )
+
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, it.description)
+                putExtra(Intent.EXTRA_SUBJECT, it.title)
+                putExtra(Intent.EXTRA_STREAM, uri)
+            }
+
+            val chooserIntent = Intent.createChooser(
+                reportIntent,
+                getString(R.string.share_via)
+            )
+
+            startActivity(chooserIntent)
         }
     }
 }

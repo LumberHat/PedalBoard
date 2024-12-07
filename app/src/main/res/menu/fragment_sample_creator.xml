@@ -9,6 +9,12 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/share_sample"
+        android:title="@string/share"
+        android:icon="@drawable/ic_share_black"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/duplicate_sample"
         android:title="@string/duplicate"
         android:icon="@drawable/ic_copy_black"

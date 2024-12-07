@@ -37,4 +37,6 @@
     <string name="settings">Settings</string>
     <string name="load_sample">Load Sample</string>
     <string name="sample_picker_hint">Select a sample</string>
+    <string name="share">Share</string>
+    <string name="share_via">Share via..</string>
 </resources>
