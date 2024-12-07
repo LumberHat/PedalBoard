@@ -14,6 +14,7 @@ import androidx.core.net.toUri
 import com.example.pedalboard.filtering.Filter
 import com.example.pedalboard.filtering.baseFilters.DigitalFilter
 import com.example.pedalboard.sampling.Sample
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.merge
 import java.io.FileDescriptor
 import java.io.FileInputStream
@@ -23,63 +24,53 @@ import kotlin.math.log
 private const val TAG = "AUDIO_HUB"
 class AudioHub private constructor(val context: Context)
 {
-    val recorder: AudioRecorder
-    val player: AudioPlayer
-    var _sample: Sample? = null
-    var SSIN: FileInputStream? = null
-    var SSOUT: FileOutputStream? = null
+    var recorder: AudioRecorder? = null
+    var player: AudioPlayer? = null
+    var isRecording = false
+    var sampleFileName = ""
 
-    var srcStream: FileInputStream
-    var dstStream: FileOutputStream
     init {
         context.openFileOutput("temp.3gp", Context.MODE_PRIVATE).apply { write(byteArrayOf()); close() }
-        srcStream = context.openFileInput("temp.3gp")
-        dstStream = context.openFileOutput("temp.3gp", Context.MODE_PRIVATE)
-        val srcfd = srcStream.fd
-        val dstfd = dstStream.fd
-        Log.d(TAG, "src: $srcfd valid: ${srcfd.valid()}")
-        Log.d(TAG, "src: $dstfd valid: ${dstfd.valid()}")
-        recorder = AudioRecorder(context)
-        player = AudioPlayer(context, "temp.3gp")
+
     }
 
-    fun setSample(sample: Sample) {
-        _sample = sample
-        context.openFileOutput(sample.id.toString() + ".3gp", Context.MODE_PRIVATE).close()
-        //player.setSource(sample.id.toString() + ".3gp")
+    fun start(sample: Sample) {
+        recorder = AudioRecorder(context)
+        sampleFileName = sample.id.toString()+".3gp"
+        player = AudioPlayer(context, sampleFileName)
     }
 
     fun getPlayerSession(): Int {
-        return player.sessionId
+        return player?.sessionId ?: -1
     }
 
     fun writeFromCache() {
-        SSOUT.use { fileOut ->
+
+        val dstStream = context.openFileOutput(sampleFileName, Context.MODE_PRIVATE)
+        val srcStream = context.openFileInput("temp.3gp")
+        dstStream.use { fileOut ->
             if (fileOut != null) {
                 srcStream.copyTo(fileOut)
             }
         }
+        srcStream.close()
+        dstStream.close()
     }
 
     fun killAll() {
-        srcStream.close()
-        dstStream.close()
-
-        player.kill()
-        recorder.kill()
+        recorder?.kill()
     }
 
-    fun play(listener: (p: MediaPlayer) -> Unit) {
-        player.onCompleteListener = listener
-        player.play()
+    fun play(listener: () -> Unit) {
+        player?.onCompleteListener = listener
+        player?.playRecording()
     }
 
     fun toggleRecording() : Boolean {
-        val b = recorder.toggleRecording()
-        if (!b) {
-            //player.setSource("temp.3gp")
-        }
-        return b
+
+        isRecording = recorder?.toggleRecording() ?: false
+        if (!isRecording) player?.sourceName = "temp.3gp"
+        return isRecording
     }
 
     companion object {
@@ -103,42 +94,32 @@ val statusMap: Map<Int, String> = mapOf(0 to "gone", 1 to "idle", 2 to "initiali
 
 class AudioPlayer (
     private val context: Context,
-    private var source: String)
+    var sourceName: String)
 {
     private var status = 0
     var sessionId = -1
-    private var _onCompleteListener: ((p: MediaPlayer) -> Unit) = {}
-    var onCompleteListener
-        get() = _onCompleteListener
-        set(listener) {
-            _onCompleteListener = {p -> stop(); reset(); listener(p)}
-        }
+    var onCompleteListener: (() -> Unit) = {}
+
 
     private lateinit var player: MediaPlayer
-    private var inputStream: FileInputStream = context.openFileInput(source)
 
-    init {
-        var fileURI: Uri = File(context.filesDir, source).toUri()
-        setUp(inputStream.fd)
-    }
-
-    private fun setUp(fd: FileDescriptor) {
-        if (status == 0) {
-            Log.d(TAG, "setUp: Creating new MediaPlayer")
-            player = MediaPlayer()
-            status = 1
+    fun playRecording() {
+        val src = context.openFileInput(sourceName)
+        val audioPlayer = MediaPlayer().apply {
+            try {
+                setDataSource(src.fd)
+                prepare()
+                start()
+            } catch (e: IOException) {
+                Log.e(TAG, "prepare() failed in playRecording() for source: $sourceName")
+                onCompleteListener()
+            }
         }
-        reset()
-        setDataSource(fd)
-        prepare()
-
-        sessionId = player.audioSessionId
+        audioPlayer.setOnCompletionListener {
+            p->onCompleteListener();p.release();src.close()
+        }
     }
 
-    fun play() {
-        player.setOnCompletionListener(onCompleteListener)
-        start()
-    }
 
     private fun reset() {
         if (status != 0) {
@@ -147,50 +128,6 @@ class AudioPlayer (
             status = 1 //idle
         } else Log.e(TAG, "reset: CANCELED status: ${statusMap[status]}")
         
-    }
-
-    private fun setDataSource(fd: FileDescriptor) {
-        if (status == 1) {
-            Log.d(TAG, "setDataSource: $fd")
-            player.setDataSource(fd)
-            status = 2
-        } else Log.e(TAG, "setDataSource: CANCELED status: ${statusMap[status]}")
-    }
-    //my 2 == their 1
-    private fun prepare() {
-        if (status != 2) {
-            Log.d(TAG, "prepare")
-            player.prepare()
-            status = 3
-        } else Log.e(TAG, "prepare: CANCELED status: ${statusMap[status]}")
-    }
-
-    private fun start() {
-        if (status == 3) {
-            Log.d(TAG, "start")
-            player.start()
-            status = 5
-        } else Log.e(TAG, "start: CANCELED status: ${statusMap[status]}")
-    }
-
-    private fun stop() {
-        if (status in 2..5 && status != 4) {
-            player.stop()
-            status = 6
-        }  else Log.e(TAG, "stop: CANCELED status: ${statusMap[status]}")
-    }
-
-    private fun release() {
-        player.release()
-        status = 0
-    }
-
-    fun close() {
-        player.release()
-    }
-
-    fun kill() {
-        release()
     }
 }
 

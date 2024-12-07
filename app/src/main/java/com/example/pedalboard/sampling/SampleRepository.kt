@@ -3,7 +3,6 @@ package com.example.pedalboard.sampling
 import android.content.Context
 import android.util.Log
 import androidx.room.Room
-import com.example.pedalboard.FilesInator
 import com.example.pedalboard.sampling.database.SamplesDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,17 +48,33 @@ class SampleRepository private constructor(
     }
 
     suspend fun duplicateSample(sample: Sample) {
-        val path = context.getDir("samples", 0)?.absolutePath
         val newId = UUID.randomUUID()
         val newSample = Sample(
             id = newId,
             title = sample.title + "-copy",
             description = sample.description
         )
+
+        val dstStream = context.openFileOutput(newId.toString()+".3gp", Context.MODE_PRIVATE)
+        val srcStream = context.openFileInput(sample.id.toString()+".3gp")
+        dstStream.use { fileOut ->
+            if (fileOut != null) {
+                srcStream.copyTo(fileOut)
+            }
+        }
+        withContext(Dispatchers.IO) {
+            srcStream.close()
+            dstStream.close()
+        }
+
+
+
         database.samplesDao().addSample(newSample)
     }
 
     fun deleteSample(sample: Sample) {
+        val f = File(context.filesDir, sample.id.toString()+".3gp")
+        if (f.exists()) f.delete()
         coroutineScope.launch {
             database.samplesDao().deleteSample(sample)
         }

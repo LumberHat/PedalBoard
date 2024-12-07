@@ -54,6 +54,8 @@ class SampleCreatorFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             _binding =
                 FragmentSampleCreatorBinding.inflate(inflater, container, false)
+
+
             return binding.root
         }
 
@@ -74,7 +76,10 @@ class SampleCreatorFragment: Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sampleCreatorViewModel.sample.collect { sample ->
-                    sample?.let { updateUi(it) }
+                    sample?.let {
+                        audioHub.start(it)
+                        updateUi(it) }
+
                 }
             }
         }
@@ -146,9 +151,9 @@ class SampleCreatorFragment: Fragment() {
             Log.e(TAG, "recording failed with exception: ${e}")
             Snackbar.make(requireView(), R.string.recording_error, Snackbar.LENGTH_LONG).show()
         }
-        binding.recordSample.text = if (!audioHub.recorder.isRecording) getString(R.string.record) else getString(R.string.stop)
-        menu.getItem(0).setEnabled(!audioHub.recorder.isRecording)
-        menu.getItem(1).setEnabled(!audioHub.recorder.isRecording)
+        binding.recordSample.text = if (!audioHub.isRecording) getString(R.string.record) else getString(R.string.stop)
+        menu.getItem(0).setEnabled(!audioHub.isRecording)
+        menu.getItem(1).setEnabled(!audioHub.isRecording)
     }
 
     private fun delete() {
@@ -180,7 +185,6 @@ class SampleCreatorFragment: Fragment() {
     }
 
     private fun updateUi(sample: Sample) {
-        audioHub.setSample(sample)
         binding.apply {
             if (sampleTitle.text.toString() != sample.title) {
                 sampleTitle.setText(sample.title)

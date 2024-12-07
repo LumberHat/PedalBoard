@@ -148,7 +148,6 @@ class FilterCreatorFragment: Fragment() {
         requireActivity().runOnUiThread {
             testSample = sample
             binding.loadSample.text = testSample!!.title
-            audioHub.setSample(sample)
         }
     }
 
